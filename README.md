@@ -1,5 +1,4 @@
-# Structural Reduction of Two Twin-Prime Conjectures  
-and Conditional Resolution under Hypothesis H
+# Structural Reduction of Two Twin-Prime Conjectures and Conditional Resolution under Hypothesis H
 
 **Dacomb Bierton**  
 ORCID: [0009-0007-7507-1398](https://orcid.org/0009-0007-7507-1398)  
