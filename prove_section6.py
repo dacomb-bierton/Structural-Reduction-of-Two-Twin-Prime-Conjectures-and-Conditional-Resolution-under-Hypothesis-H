@@ -940,7 +940,7 @@ def run(limit: int, quiet: bool) -> int:
     print("=" * 78)
     if failed == 0:
         print("ALL EIGHT SECTION-6 CLAIMS CERTIFIED.")
-        print("Lemmas 2.1-2.3, 4.2, 4.3, 4.5, 5.1-5.3 and Proposition 4.9 are complete (finite residue proofs).")
+        print("Lemmas 2.1-2.3, 4.2, 4.3, 4.5, 4.7, 5.1-5.3 and Proposition 4.9 are complete (finite residue proofs).")
         print("Theorems 4.4, 4.6 and 5.5 are complete as implications from H / uniform Bateman-Horn.")
         print("Unconditional 1.1 and 1.2 remain open because they imply the twin-prime conjecture.")
         return 0
