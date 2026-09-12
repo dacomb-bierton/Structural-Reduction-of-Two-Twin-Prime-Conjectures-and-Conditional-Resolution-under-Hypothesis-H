@@ -1,0 +1,552 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{heuristic}[theorem]{Heuristic}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Sing}{\mathfrak{S}}
+\DeclareMathOperator{\dmin}{d_{\min}}
+
+\title{Structural Reduction of Two Twin-Prime Conjectures\\
+and Conditional Resolution under Hypothesis H}
+\author{Dacomb Bierton\\ \small ORCID: 0009-0007-7507-1398}
+\date{23 August 2026. Revised 12 September 2026.}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+I introduced the Twin-Prime Propagation Conjecture and the Twin-Gap Existence Conjecture in two earlier notes \cite{B1,B2}.
+Here I give a complete structural reduction of both statements.
+A covering argument shows that the second linear form $D_n$ is never a lower twin prime after the first pair; consequently the propagation conjecture reduces to a single admissible $6$-tuple of linear forms and follows from Schinzel's Hypothesis~H.
+The revised edition sharpens this in several directions.
+Under Hypothesis~H, \emph{every} gap $g\equiv 0 \pmod 6$ occurs infinitely often as the gap of a consecutive propagating pair (Theorem~\ref{thm:everygap}), by a Chinese-remainder construction that forces consecutiveness.
+All gap-$6$ witnesses beyond $n=5$ lie in the class $n\equiv 11 \pmod{30}$, and gap-$6$ propagation never iterates: the successor of a gap-$6$ pair never begins another gap-$6$ pair (Proposition~\ref{prop:noiterate}).
+For the gap-existence conjecture the $5$-tuple in the gap variable is shown to be admissible for every lower twin $t>5$, with no exceptional set, and its singular series is bounded below by the Hardy--Littlewood quintuplet constant $10.1318\ldots$; the conjecture therefore follows from a uniform Bateman--Horn law with $\gg t^{\theta}/(\log t)^5$ productive gaps below $t^{\theta}$.
+The Bateman--Horn constant of the propagating $6$-tuple is computed, $\Sing = 51.8959\ldots$, and a heuristic constant $\kappa = 14.7677\ldots$ for the number of propagating consecutive pairs is derived and confirmed against the data to within $3\%$.
+The logical relation between the two conjectures is corrected: neither is known to imply the other, both imply the twin-prime conjecture, and both follow from uniform Bateman--Horn.
+A companion Python certificate (\texttt{prove\_section6.py}) machine-checks every modular lemma, the admissibility statements, the constructions, the logical reductions, and the computational claims of Section~\ref{sec:status}.
+\end{abstract}
+
+\tableofcontents
+
+\section{The two conjectures}\label{sec:conj}
+
+Let $\T$ denote the strictly increasing sequence of lower twin primes: primes $p$ for which $p+2$ is also prime,
+\[
+3,\ 5,\ 11,\ 17,\ 29,\ 41,\ 59,\ 71,\ 101,\ \dots.
+\]
+Write $p_n$ for the $n$th term.
+
+\begin{conjecture}[Twin-Prime Propagation]\label{conj:A}
+For consecutive terms $p_n, p_{n+1}$ set
+\begin{equation}\label{eq:CD}
+C_n = p_n + p_{n+1} + 1,\qquad D_n = p_n + p_{n+1} + 3 .
+\end{equation}
+The pair $(p_n,p_{n+1})$ \emph{propagates} if at least one of $C_n, D_n$ lies in $\T$.
+There are infinitely many such indices $n$.
+\end{conjecture}
+
+\begin{conjecture}[Twin-Gap Existence]\label{conj:B}
+An even positive integer $d$ is a \emph{productive gap} for $t\in\T$ if
+\begin{enumerate}
+\item[(i)] $t+d\in\T$,
+\item[(ii)] $2t+d+1\in\T$,
+\item[(iii)] at least one of $d-1$, $d+1$ is prime.
+\end{enumerate}
+Every sufficiently large $t\in\T$ admits a productive gap of size $o(t)$.
+If $d(t)$ is such a gap, the map
+\[
+G(t) := 2t + d(t) + 1
+\]
+produces infinitely many twin primes.
+\end{conjecture}
+
+The two constructions coincide on consecutive twins: if $d = p_{n+1}-p_n$ then $G(p_n) = C_n$.
+Conjecture~\ref{conj:A} asks that this occur infinitely often along consecutive pairs.
+Conjecture~\ref{conj:B} asks for a (possibly non-consecutive) productive $d = o(t)$ at every large $t$.
+
+\begin{remark}[Small cases and the threshold]\label{rem:small}
+The threshold ``sufficiently large'' in Conjecture~\ref{conj:B} cannot be lowered to $t = 3$: the conditions $3+d\in\T$ and $7+d\in\T$ force $d\equiv 2$ and $d\equiv 4 \pmod 6$ respectively (every lower twin $>3$ is $\equiv 5\pmod 6$, Section~\ref{sec:cover}), so $t=3$ has no productive gap at all.
+Every lower twin $5\le t\le 10^6$ does have one (Section~\ref{sec:status}), and the data suggest that the threshold is exactly $t\ge 5$.
+Condition (iii) is automatically satisfied by every $d\equiv 0\pmod 6$ with $6\le d\le 114$; the first failure is $d = 120$, where $119 = 7\cdot 17$ and $121 = 11^2$.
+Consequently (iii) is not a restriction for small gaps, but it is a genuine one in general.
+\end{remark}
+
+\section{A covering that kills \texorpdfstring{$D_n$}{D\_n}}\label{sec:cover}
+
+The disjunction ``$C_n$ or $D_n$'' in Conjecture~\ref{conj:A} is almost redundant.
+
+\begin{lemma}[Ternary obstruction]\label{lem:Dn}
+If $p,q\in\T$ and $p,q>3$, then $D := p+q+3$ is never a lower twin prime.
+\end{lemma}
+
+\begin{proof}
+Every prime greater than $3$ is congruent to $\pm1 \pmod 6$.
+A lower twin greater than $3$ cannot be $\equiv 1\pmod 6$, for then the upper member would be $\equiv 3\pmod 6$ and hence divisible by $3$.
+It cannot be $\equiv 3\pmod 6$, for then it would itself be divisible by $3$.
+Thus every lower twin $p>3$ satisfies $p\equiv 5\pmod 6$, equivalently $p\equiv 2\pmod 3$.
+Taking $p\equiv q\equiv 2\pmod 3$ we obtain
+\[
+D+2 = p+q+5 \equiv 2+2+2 \equiv 0 \pmod 3,
+\]
+and $D+2\ge 5+5+5 = 15>3$. Hence $D+2$ is composite, so $D\notin\T$.
+\end{proof}
+
+The only exception is the first pair $(p_1,p_2) = (3,5)$, for which $D_1 = 11\in\T$.
+For all $n\ge 2$, propagation is exactly the assertion that $C_n\in\T$, i.e.\ that both $C_n$ and $C_n+2 = D_n$ are prime.
+
+\begin{lemma}[Residue of $C_n$]\label{lem:Cn}
+If $p,q\in\T$ and $p,q>3$, then $C := p+q+1\equiv 5\pmod 6$.
+In particular there is no obstruction modulo $2$ or $3$ to $C\in\T$.
+\end{lemma}
+
+\begin{proof}
+From $p\equiv q\equiv 5\pmod 6$ we get $C\equiv 5+5+1\equiv 5\pmod 6$, hence $C\equiv 2\pmod 3$ and $C+2\equiv 1\pmod 3$.
+\end{proof}
+
+\begin{lemma}[Gaps between lower twins]\label{lem:mod6}
+If $p<q$ are lower twins with $p>3$, then $q-p\equiv 0\pmod 6$.
+Moreover, if $t\in\T$, $t>3$, and $d$ is a productive gap for $t$, then $d\equiv 0\pmod 6$.
+\end{lemma}
+
+\begin{proof}
+Both $p$ and $q$ are $\equiv 5\pmod 6$. For the second statement apply the first to the pair $(t, t+d)$.
+\end{proof}
+
+Thus Conjecture~\ref{conj:A} is equivalent to the existence of infinitely many consecutive pairs $p<q$ in $\T$ for which $p+q+1$ and $p+q+3$ are both prime, and every gap in sight is a multiple of $6$.
+
+\section{Both conjectures imply the twin-prime conjecture}\label{sec:tpc}
+
+\begin{proposition}\label{prop:tpc}
+Conjecture~\ref{conj:A} implies that there are infinitely many twin primes.
+Conjecture~\ref{conj:B} implies the same conclusion.
+\end{proposition}
+
+\begin{proof}
+A propagating pair produces an element of $\T$ of size $\sim 2p_n$; infinitely many such pairs therefore yield infinitely many twins.
+For Conjecture~\ref{conj:B}, take $t_0\in\T$ larger than the threshold and set $t_{k+1} := G(t_k)$.
+Then $t_{k+1}\in\T$ and $t_{k+1} = 2t_k + d(t_k) + 1 > t_k$, so $(t_k)_{k\ge0}$ is a strictly increasing sequence in $\T$.
+\end{proof}
+
+An unconditional proof of either statement would therefore prove the twin-prime conjecture.
+The Zhang--Maynard--Tao theorem on bounded gaps between primes \cite{Zhang,Maynard,Polymath} produces infinitely many prime pairs at distance at most $246$, but does not produce a six-dimensional constellation of the shape appearing here, and does not produce gap $2$ infinitely often.
+The parity problem of classical sieves remains. There is no unconditional proof with present technology.
+
+\begin{proposition}[Logical relations]\label{prop:relations}
+Hypothesis~H implies Conjecture~\ref{conj:A} (Theorem~\ref{thm:A}).
+The uniform Bateman--Horn hypothesis of Section~\ref{sec:B} implies both conjectures.
+Neither of Conjectures~\ref{conj:A}, \ref{conj:B} is known to imply the other.
+\end{proposition}
+
+\begin{proof}
+The first two assertions are Theorems~\ref{thm:A} and~\ref{thm:B} together with the observation that uniform Bateman--Horn implies Bateman--Horn, which implies Hypothesis~H for the tuple~\eqref{eq:six}.
+For the last assertion: Conjecture~\ref{conj:A} is an infinitely-often statement about \emph{consecutive} pairs, while Conjecture~\ref{conj:B} is a for-all-large-$t$ statement about gaps that need not be consecutive.
+A productive gap $d(t)$ supplied by Conjecture~\ref{conj:B} is the consecutive gap only if no lower twin lies strictly between $t$ and $t+d(t)$, which Conjecture~\ref{conj:B} does not assert; in the data the least productive gap is the consecutive gap for fewer than $7\%$ of the lower twins below $10^6$.
+Conversely a consecutive propagating gap need not satisfy (iii) (Remark~\ref{rem:small}), and infinitely many successes say nothing about every large $t$.
+\end{proof}
+
+In the first edition of this note Conjecture~\ref{conj:B} was described as ``strictly stronger'' than Conjecture~\ref{conj:A}; Proposition~\ref{prop:relations} replaces that claim.
+
+\section{Resolution of Conjecture~\ref{conj:A} under Hypothesis H}\label{sec:A}
+
+\begin{conjecture}[Schinzel's Hypothesis H \cite{Schinzel}]\label{conj:H}
+Let $f_1,\dots,f_k\in\Z[x]$ be irreducible polynomials with positive leading coefficients, such that the product $f_1\cdots f_k$ has no fixed prime divisor (the system is \emph{admissible}).
+Then there are infinitely many integers $n$ for which every $f_i(n)$ is prime.
+\end{conjecture}
+
+Consider the six linear forms
+\begin{equation}\label{eq:six}
+f_1(n) = n,\quad f_2(n) = n+2,\quad f_3(n) = n+6,\quad f_4(n) = n+8,\quad f_5(n) = 2n+7,\quad f_6(n) = 2n+9 .
+\end{equation}
+If they are simultaneously prime, then $n$ and $n+6$ are lower twins and
+\[
+C = n + (n+6) + 1 = 2n+7
+\]
+is a lower twin, so the pair $(n,n+6)$ propagates.
+
+\begin{lemma}[Admissibility]\label{lem:adm}
+The $6$-tuple~\eqref{eq:six} is admissible.
+Writing $\nu(q)$ for the number of residues $r$ modulo $q$ at which $\prod f_i(r)\equiv 0$, one has
+\[
+\nu(2) = 1,\quad \nu(3) = 2,\quad \nu(5) = 4,\quad \nu(7) = 4,\qquad \nu(q) = 6\ \text{ for every prime } q\ge 11 .
+\]
+\end{lemma}
+
+\begin{proof}
+It is enough to show that for every prime $q$ the reductions $f_i(x) \bmod q$ do not cover $\F_q$.
+
+\emph{The prime $q=2$.} Take $n\equiv 1\pmod 2$. Every $f_i(n)$ is odd. The only root is $n\equiv 0$, so $\nu(2)=1$.
+
+\emph{The prime $q=3$.} Take $n\equiv 2\pmod 3$. Then
+$n\equiv 2$, $n+2\equiv 1$, $n+6\equiv 2$, $n+8\equiv 1$, $2n+7\equiv 2$, $2n+9\equiv 1$.
+None vanish; the roots are $n\equiv 0,1$, so $\nu(3)=2$.
+
+\emph{The prime $q=5$.} The roots are $n\equiv 0, 3, 4, 2, 4, 3$ respectively, i.e.\ the set $\{0,2,3,4\}$, so $\nu(5)=4$ and $n\equiv 1\pmod 5$ survives:
+$n\equiv 1$, $n+2\equiv 3$, $n+6\equiv 2$, $n+8\equiv 4$, $2n+7\equiv 4$, $2n+9\equiv 1$.
+
+\emph{The prime $q=7$.} The roots are $n\equiv 0,5,1,6,0,6$, so $\nu(7)=4$ and $n\equiv 2,3,4$ survive.
+
+\emph{Primes $q\ge 11$.} Two roots of linear forms $a_ix+b_i$, $a_jx+b_j$ coincide modulo $q$ only if $q$ divides the minor $a_ib_j-a_jb_i$.
+For the forms~\eqref{eq:six} the nonzero minors are $2,3,4,5,6,7,8,9$ in absolute value, so for $q\ge 11$ the six roots are distinct and $\nu(q)=6<q$.
+Hence no prime is a fixed divisor of the product $f_1\cdots f_6$.
+\end{proof}
+
+\begin{lemma}[Gap $6$ forces consecutiveness]\label{lem:gap6}
+If $n>3$ and both $n, n+6\in\T$, then $n$ and $n+6$ are consecutive in $\T$.
+\end{lemma}
+
+\begin{proof}
+The only odd integers strictly between $n$ and $n+6$ are $n+2$ and $n+4$.
+Now $n>3$ and $n\in\T$ imply $n\equiv 2\pmod 3$, so $n+4\equiv 0\pmod 3$ and $n+4\ge 9$.
+Thus $n+4$ is composite, so neither $n+2$ (whose upper twin would be $n+4$) nor $n+4$ lies in $\T$.
+\end{proof}
+
+\begin{theorem}[Conditional resolution of Conjecture~\ref{conj:A}]\label{thm:A}
+Assume Hypothesis~H. Then Conjecture~\ref{conj:A} is true.
+More precisely, there are infinitely many consecutive pairs in $\T$ at gap $6$ that propagate.
+\end{theorem}
+
+\begin{proof}
+Lemma~\ref{lem:adm} and Hypothesis~H give infinitely many $n$ for which $f_1(n),\dots,f_6(n)$ are all prime.
+For all such $n>3$ we have $n, n+6\in\T$ and $2n+7\in\T$.
+Lemma~\ref{lem:gap6} says these are consecutive in $\T$, and $C = n+(n+6)+1 = 2n+7\in\T$, so the pair propagates.
+\end{proof}
+
+This is the natural precise form of the ``sufficiently strong Hardy--Littlewood'' heuristic I used in the earlier notes: it is Hypothesis~H for one explicit admissible $6$-tuple.
+
+\begin{lemma}[The class of gap-$6$ witnesses]\label{lem:mod30}
+If $n>5$ and $f_1(n),\dots,f_6(n)$ are all prime, then $n\equiv 11\pmod{30}$.
+\end{lemma}
+
+\begin{proof}
+By the proof of Lemma~\ref{lem:adm} the only surviving classes are $n\equiv 1\pmod 2$, $n\equiv 2\pmod 3$ and $n\equiv 1\pmod 5$; for $n>5$ none of the six values can equal $2$, $3$ or $5$, so $n$ must lie in a surviving class.
+The Chinese remainder theorem gives $n\equiv 11\pmod{30}$.
+\end{proof}
+
+The witnesses below $10^7$ are $n = 5, 11, 1481, 116531, 276041, 295871, 388691, \dots$ ($62$ in all); every one beyond $5$ is $\equiv 11\pmod{30}$.
+
+\subsection{Every gap occurs}
+
+Theorem~\ref{thm:A} realises only the gap $6$.
+The following strengthening shows that, under Hypothesis~H, no gap is missed.
+
+\begin{theorem}[Every gap $g\equiv 0\pmod 6$ propagates infinitely often]\label{thm:everygap}
+Assume Hypothesis~H. For every $g\equiv 0\pmod 6$, $g\ge 6$, there are infinitely many consecutive pairs $(p,q)$ in $\T$ with $q-p = g$ that propagate.
+\end{theorem}
+
+For a gap $g$ write
+\begin{equation}\label{eq:sixg}
+\begin{aligned}
+f^{(g)}_1(n) &= n, & f^{(g)}_2(n) &= n+2, & f^{(g)}_3(n) &= n+g,\\
+f^{(g)}_4(n) &= n+g+2, & f^{(g)}_5(n) &= 2n+g+1, & f^{(g)}_6(n) &= 2n+g+3 .
+\end{aligned}
+\end{equation}
+Simultaneous primality gives $n, n+g\in\T$ and $C = 2n+g+1\in\T$; what is missing is consecutiveness.
+
+\begin{lemma}[Local admissibility for every gap]\label{lem:admg}
+For every $g\equiv 0\pmod 6$ the $6$-tuple~\eqref{eq:sixg} is admissible. The surviving classes modulo $5$ are
+\[
+\begin{array}{c|ccccc}
+g \bmod 30 & 0 & 6 & 12 & 18 & 24\\ \hline
+\text{surviving } n \bmod 5 & \{4\} & \{1\} & \{2,4\} & \{1,4\} & \{2\}
+\end{array}
+\]
+\end{lemma}
+
+\begin{proof}
+Modulo $2$ take $n$ odd; since $g$ is even all six values are odd.
+Modulo $3$ take $n\equiv 2$; since $g\equiv 0$ the values are $2,1,2,1,2,1$, none zero.
+Modulo $5$ the roots are $0$, $3$, $-g$, $-g-2$, $-(g+1)/2$, $-(g+3)/2$; running through the five classes of $g$ modulo $5$ gives the table (for instance $g\equiv 2$: roots $\{0,3,3,1,1,0\}$, survivors $\{2,4\}$).
+For $q\ge 7$ six forms forbid at most six residues and $q>6$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:everygap}]
+Fix $g\equiv 0\pmod 6$ and put $J = g/6 - 1$.
+By Lemma~\ref{lem:mod6} a lower twin $n+k$ with $0<k<g$ and $n\equiv 5\pmod 6$ must have $k\equiv 0\pmod 6$; so the only candidates for a lower twin strictly between $n$ and $n+g$ are $n+6j$, $1\le j\le J$.
+For $g=6$ there are none and Theorem~\ref{thm:A} applies, so assume $g\ge 12$.
+
+Let $q_1<\dots<q_J$ be the $J$ smallest primes exceeding $g$; then $q_j\ge 13$, so $q_j\nmid 30$.
+Choose $r_{30}$ with $r_{30}\equiv 1\pmod 2$, $r_{30}\equiv 2\pmod 3$ and $r_{30}\bmod 5$ in the surviving set of Lemma~\ref{lem:admg}, and let
+\[
+M = 30\, q_1\cdots q_J,\qquad r\equiv r_{30}\pmod{30},\qquad r\equiv -6j\pmod{q_j}\quad(1\le j\le J),
+\]
+by the Chinese remainder theorem. Define the six linear forms in $m$
+\[
+F_i(m) := f^{(g)}_i(Mm+r) = a_iM\,m + f^{(g)}_i(r),\qquad a_i\in\{1,2\}.
+\]
+
+\emph{$F_1,\dots,F_6$ is admissible.}
+For $q\in\{2,3,5\}$, $F_i(m)\equiv f^{(g)}_i(r_{30})\not\equiv 0$ by the choice of $r_{30}$.
+For $q = q_j$, $F_i(m)\equiv f^{(g)}_i(-6j)\pmod{q_j}$, and the six values
+\[
+-6j,\quad 2-6j,\quad g-6j,\quad g+2-6j,\quad g+1-12j,\quad g+3-12j
+\]
+are nonzero integers of absolute value less than $g<q_j$ (the last two are odd, and $1\le j\le g/6-1$), so none vanishes modulo $q_j$.
+For $q\nmid M$ we have $q\ge 7$ and $M$ is invertible modulo $q$, so each $F_i$ has exactly one root and six forms leave a surviving class.
+Each $F_i$ is primitive, since $f^{(g)}_i(r)$ is coprime to $a_iM$.
+
+\emph{Consecutiveness.} Hypothesis~H gives infinitely many $m\ge 1$ with all $F_i(m)$ prime. Put $n = Mm+r$. Then $n, n+g\in\T$, $C = 2n+g+1\in\T$, and for each $1\le j\le J$ we have $q_j\mid n+6j$ with $n+6j > M > q_j$, so $n+6j$ is composite.
+No lower twin lies strictly between $n$ and $n+g$, the pair $(n,n+g)$ is consecutive in $\T$, and it propagates.
+\end{proof}
+
+For $g = 12$ the construction gives $M = 390$, $r = 137$, and the class $n\equiv 137\pmod{390}$ contains the witnesses $n = 29387$ ($n+6 = 13\cdot 2261$, $C = 58787$), $n = 108947$ and $n = 7403117$ below $10^7$.
+Without the forcing class the data are richer: every gap $g\equiv 0\pmod 6$ with $g\le 120$ is realised by a propagating consecutive pair below $10^7$, the first examples being
+\[
+\begin{array}{c|ccc}
+g & 6 & 12 & 18\\ \hline
+(p,q)\to C & (5,11)\to 17 & (29,41)\to 71 & (41,59)\to 101\\[4pt]
+g & 24 & 30 & 36\\ \hline
+(p,q)\to C & (5417,5441)\to 10859 & (2309,2339)\to 4649 & (311,347)\to 659
+\end{array}
+\]
+
+\begin{corollary}
+Under Hypothesis~H the set of gaps $\{p_{n+1}-p_n : n\ge 2,\ (p_n,p_{n+1}) \text{ propagates}\}$ is exactly $6\Z_{>0}$; unconditionally it is contained in $6\Z_{>0}$ by Lemma~\ref{lem:mod6}.
+\end{corollary}
+
+\subsection{Gap-\texorpdfstring{$6$}{6} propagation never iterates}
+
+\begin{proposition}\label{prop:noiterate}
+Let $(n,n+6)$ be a propagating pair of consecutive lower twins with successor $C = 2n+7\in\T$.
+Then $C+6\notin\T$; in particular $(C, C+6)$ is never a propagating gap-$6$ pair, and the gap-$6$ process cannot be iterated even once.
+Moreover, if $n>5$ and $C'$ is the lower twin following $C$, then $C'-C\equiv 0, 12$ or $18\pmod{30}$.
+\end{proposition}
+
+\begin{proof}
+For $n = 5$: $C = 17$, and $23$ is prime but $25 = 5^2$, so $23\notin\T$; the next lower twin is $29$, at gap $12$.
+For $n>5$ Lemma~\ref{lem:mod30} gives $n\equiv 1\pmod 5$, hence $C = 2n+7\equiv 4$ and $C+6\equiv 0\pmod 5$ with $C+6>5$; so $C+6$ is composite.
+Equivalently, the $10$-tuple obtained by adjoining $2n+13, 2n+15, 4n+21, 4n+23$ to~\eqref{eq:six} has the fixed divisor $5$: its roots modulo $5$ cover $\F_5$.
+For the last claim, $C'\in\T$ with $C'>5$ requires $C'\not\equiv 0,3\pmod 5$, so $C'-C\not\equiv 1,4\pmod 5$; combined with $C'-C\equiv 0\pmod 6$ this leaves the classes $0,12,18$ modulo $30$.
+\end{proof}
+
+Among the gap-$6$ witnesses $5<n\le 10^7$ whose successor $C$ also lies below $10^7$ ($37$ of them) the following gap is $\equiv 0, 12, 18\pmod{30}$ in $13$, $11$, $13$ cases respectively, never $6$ or $24$.
+
+\subsection{The Bateman--Horn asymptotic}
+
+The same argument with the Bateman--Horn conjecture \cite{BH} supplies the asymptotic.
+The singular series
+\begin{equation}\label{eq:S}
+\Sing = \prod_q \Bigl(1-\frac1q\Bigr)^{-6}\Bigl(1-\frac{\nu(q)}q\Bigr)
+\end{equation}
+is positive by Lemma~\ref{lem:adm}, and Bateman--Horn predicts
+\begin{equation}\label{eq:BH}
+\#\{n\le X : f_1(n),\dots,f_6(n)\ \text{all prime}\} \sim \Sing\int_2^X \frac{dt}{\prod_{i=1}^6 \log f_i(t)} \asymp \frac{X}{(\log X)^6}.
+\end{equation}
+(The leading coefficients of $f_5, f_6$ enter only through $\nu(2)$; the first edition carried a spurious factor $\prod(\operatorname{lead} f_i)^{-1}$.)
+With the values of Lemma~\ref{lem:adm},
+\[
+\Sing = 32\cdot\frac{243}{64}\cdot\frac{3125}{4096}\cdot\frac{50421}{46656}\cdot\prod_{q\ge 11}\Bigl(1-\frac1q\Bigr)^{-6}\Bigl(1-\frac6q\Bigr) = 51.8959\ldots
+\]
+The product over $q\ge 11$ is the tail of the Hardy--Littlewood sextuplet constant $17.2986\ldots$ (the tuple $(0,4,6,10,12,16)$ has $\nu(7)=6$), so $\Sing = 3\times 17.2986\ldots$ exactly.
+The prediction~\eqref{eq:BH} gives $51.7$ witnesses below $10^7$ and $112.6$ below $4\cdot 10^7$; the actual counts are $62$ and $126$, consistent with Poisson fluctuation.
+In particular the count of propagating gap-$6$ pairs up to $X$ is $\asymp X/(\log X)^6\to\infty$, and by the proof of Theorem~\ref{thm:everygap} the same holds, with its own positive constant, for every gap $g\equiv 0\pmod 6$.
+
+\begin{remark}[Corrected local heuristic]\label{rem:heur}
+In the original notes I treated $C_n$ and $D_n$ as exchangeable and summed $\int dt/(\log t)^3$.
+By Lemma~\ref{lem:Dn} the $D_n$-branch contributes only the single pair $(3,5)$.
+Conditioning on a consecutive pair at height $x$, one asks that a $2$-tuple of size $\sim 2x$ be twin, which has probability $\asymp 1/(\log x)^2$.
+The twin-counting measure is $\asymp dt/(\log t)^2$, so the expected number of successes up to $X$ is $\asymp\int_3^X dt/(\log t)^4$, which still diverges.
+The empirical fit $6.175(\ln p)^{-2.657}(\ln\ln p)^{2.258}$ of the earlier notes is a regression on a finite range; the Hardy--Littlewood prediction for the success rate is $\sim\kappa_{\mathrm{loc}}/(\log 2x)^2$ with the explicit constant below.
+\end{remark}
+
+\begin{heuristic}[The constant $\kappa$]\label{heur:kappa}
+Let $(p,p')$ be a consecutive pair in $\T$ with $p>5$, at height $x$, and $C = p+p'+1$.
+Then
+\[
+\Pr\bigl(C\in\T\bigr)\approx\frac{\kappa_{\mathrm{loc}}}{(\log 2x)^2},\qquad
+\kappa_{\mathrm{loc}} = 6\,(2C_2)\prod_{\ell\ge 5}\Bigl(1+\frac{8}{(\ell-2)^3}\Bigr) = 11.1849\ldots,
+\]
+where $2C_2 = 2\prod_{\ell\ge 3}\bigl(1-(\ell-1)^{-2}\bigr) = 1.32032\ldots$ is the twin-prime constant, and the number of propagating consecutive pairs with $p_n\le X$ is
+\[
+\approx \kappa\int_5^X\frac{dt}{(\log t)^2\,\log(2t+1)\log(2t+3)},\qquad \kappa = \kappa_{\mathrm{loc}}\cdot 2C_2 = 14.7677\ldots
+\]
+\end{heuristic}
+
+\begin{proof}[Derivation]
+For a random integer $m\approx y$ the Hardy--Littlewood heuristic \cite{HL} gives $\Pr(m,m+2\text{ prime})\approx (\log y)^{-2}\prod_\ell \Pr(m\not\equiv 0,-2 \bmod \ell)\,(1-1/\ell)^{-2}$, and for uniformly distributed $m$ the product equals $2C_2$.
+Here $C$ is not uniform.
+Modulo $2$ and $3$ it is fixed, $C\equiv 5\pmod 6$ (Lemma~\ref{lem:Cn}), which contributes the factor $(1/2)^{-2}(2/3)^{-2} = 9$ in place of $2\cdot\frac34 = \frac32$; the ratio is $6$.
+For a prime $\ell\ge 5$ both $p$ and $p'$ lie in $A_\ell = \F_\ell\setminus\{0,-2\}$, and to leading order the residues of consecutive lower twins are independent and uniform on $A_\ell$ (the biases of Lemke Oliver--Soundararajan \cite{LOS} are of relative size $O(\log\log x/\log x)$).
+The number of pairs $(a,b)\in A_\ell^2$ with $a+b+1\equiv c$ is $\ell-4$ for each of the two bad values $c\in\{0,-2\}$, because $\{0,-2\}\cap\{c,c+2\}=\emptyset$ when $\ell\ge 5$.
+Hence $\Pr(C\in A_\ell) = 1-2(\ell-4)/(\ell-2)^2$, and the ratio to the uniform value $1-2/\ell$ is
+\[
+\frac{\bigl((\ell-2)^2-2(\ell-4)\bigr)\,\ell}{(\ell-2)^3} = \frac{(\ell^2-6\ell+12)\,\ell}{(\ell-2)^3} = 1+\frac{8}{(\ell-2)^3}.
+\]
+Multiplying the corrections into $2C_2$ gives $\kappa_{\mathrm{loc}}$; integrating against the density $2C_2\,dt/(\log t)^2$ of $\T$ gives $\kappa$.
+\end{proof}
+
+The data agree with Heuristic~\ref{heur:kappa} to within a few percent: the number of propagating consecutive pairs with $p_n\le 10^7$ is $2827$ against a prediction of $2759.5$, and with $p_n\le 4\cdot 10^7$ it is $7937$ against $7719.1$.
+In dyadic blocks $[x,2x)$ with $x\ge 6\cdot 10^5$ the empirical value of $(\text{success rate})\times(\log 2x)^2$ is $11.6$, $10.8$, $11.2$, $11.1$, against $\kappa_{\mathrm{loc}} = 11.18$.
+
+\section{Resolution of Conjecture~\ref{conj:B} under uniform Bateman--Horn}\label{sec:B}
+
+Fix $t\in\T$ with $t>3$, so $t\equiv 5\pmod 6$.
+Productive even $d$ with the side-condition that $d-1$ is prime correspond to simultaneous primality of the five linear forms in $d$
+\begin{equation}\label{eq:five}
+g_1(d) = d+t,\quad g_2(d) = d+t+2,\quad g_3(d) = d+2t+1,\quad g_4(d) = d+2t+3,\quad g_5(d) = d-1 .
+\end{equation}
+The alternative $g_5^\star(d) = d+1$ covers the other clause of condition (iii).
+If $g_1(d), g_2(d)$ are both prime and exceed $3$ then $d\equiv 0\pmod 6$ automatically (Lemma~\ref{lem:mod6}).
+
+\begin{lemma}[No small-prime obstruction, uniformly in $t$]\label{lem:B23}
+Let $t>3$, $t\equiv 5\pmod 6$, and $d\equiv 0\pmod 6$. Then none of $g_1(d),\dots,g_5(d)$, $g_5^\star(d)$ is divisible by $2$ or $3$.
+\end{lemma}
+
+\begin{proof}
+The integer $d$ is even and $t$ is odd, so all forms are odd.
+Modulo $3$: $d\equiv 0$ and $t\equiv 2$, so $d+t\equiv 2$, $d+t+2\equiv 1$, $d+2t+1\equiv 2$, $d+2t+3\equiv 1$, $d-1\equiv 2$, $d+1\equiv 1$. None vanish.
+\end{proof}
+
+\begin{lemma}[Admissibility for every $t>5$]\label{lem:Badm}
+For every $t\in\T$ with $t>5$ the $5$-tuple~\eqref{eq:five} is admissible.
+For $t=5$ it is not ($5$ is a fixed divisor), but the starred tuple $(g_1,\dots,g_4,g_5^\star)$ is.
+The starred tuple is inadmissible for every $t\equiv 3\pmod 5$.
+\end{lemma}
+
+\begin{proof}
+Primes $2$ and $3$ are handled by Lemma~\ref{lem:B23}; for $q\ge 7$ five forms forbid at most five residues and $q>5$.
+It remains to examine $q = 5$, where the roots are $-t, -t-2, -2t-1, -2t-3$ and $1$ (resp.\ $-1$ for the starred tuple).
+Since $t>5$ is prime, $t\not\equiv 0\pmod 5$, and the four cases are
+\[
+\begin{array}{c|c|c|c|c}
+t \bmod 5 & \text{roots of } g_1..g_4 & \text{roots with } g_5 & \text{survivors, } g_5 & \text{survivors, } g_5^\star\\ \hline
+1 & \{4,2,2,0\} & \{0,1,2,4\} & \{3\} & \{1,3\}\\
+2 & \{3,1,0,3\} & \{0,1,3\} & \{2,4\} & \{2\}\\
+3 & \{2,0,3,1\} & \{0,1,2,3\} & \{4\} & \emptyset\\
+4 & \{1,4,1,4\} & \{1,4\} & \{0,2,3\} & \{0,2,3\}
+\end{array}
+\]
+In every row the tuple with $g_5$ has a survivor, and for $t\equiv 3$ the starred tuple has none.
+For $t\equiv 0\pmod 5$ the roots of $g_1,\dots,g_4$ are $\{0,3,4,2\}$; adjoining $1$ covers $\F_5$, adjoining $-1\equiv 4$ leaves the survivor $1$.
+\end{proof}
+
+The first edition stated admissibility only ``outside a thin set'' of $t$; Lemma~\ref{lem:Badm} shows that no exceptional set exists.
+
+\begin{lemma}[Uniform lower bound for the singular series]\label{lem:Smin}
+For $t\in\T$, $t>5$, let $\nu_t(q)$ be the number of roots of $\prod_{i\le 5} g_i$ modulo $q$ and
+\[
+\Sing(t) = \prod_q\Bigl(1-\frac1q\Bigr)^{-5}\Bigl(1-\frac{\nu_t(q)}q\Bigr).
+\]
+Then $\Sing(t)\ge\Sing_{\min}$ for every such $t$, where
+\[
+\Sing_{\min} = \prod_q\Bigl(1-\frac1q\Bigr)^{-5}\Bigl(1-\frac{\nu^{*}(q)}q\Bigr),\qquad \nu^{*}(2)=1,\ \nu^{*}(3)=2,\ \nu^{*}(5)=4,\ \nu^{*}(q)=5\ (q\ge 7),
+\]
+is the Hardy--Littlewood quintuplet constant, $\Sing_{\min} = 10.1318\ldots$
+\end{lemma}
+
+\begin{proof}
+Each local factor $(1-1/q)^{-5}(1-\nu/q)$ is strictly decreasing in $\nu$.
+Modulo $2$ all five forms reduce to $d+1$, so $\nu_t(2)=1$; modulo $3$ the roots are $\{1,2\}$ by Lemma~\ref{lem:B23}, so $\nu_t(3)=2$; modulo $5$ Lemma~\ref{lem:Badm} gives $\nu_t(5)\le 4$; and trivially $\nu_t(q)\le 5$.
+Hence every local factor of $\Sing(t)$ is at least the corresponding factor of $\Sing_{\min}$.
+The tuple $(0,2,6,8,12)$ has exactly the root counts $\nu^{*}$, so $\Sing_{\min}$ is its Hardy--Littlewood constant.
+\end{proof}
+
+Concretely $\Sing(11) = 22.80$, $\Sing(17) = 21.71$, $\Sing(29) = 47.35$, $\Sing(101) = 15.99$, $\Sing(1019) = 78.46$: coincidences among the roots (which occur when $q\mid(t-1)(t+1)(t+2)(t+3)$) only increase the series.
+
+\begin{conjecture}[Uniform Bateman--Horn hypothesis]\label{conj:UBH}
+For an admissible family of $k$ linear forms $h_1,\dots,h_k$ in one variable, with coefficients of absolute value at most $X$ and singular series $\Sing$,
+\[
+\#\{n\le Y : h_1(n),\dots,h_k(n)\ \text{all prime}\} = \bigl(\Sing+o(1)\bigr)\int_2^Y\frac{du}{\prod_{i}\log|h_i(u)|},
+\]
+uniformly for $Y\ge X^\theta$ with any fixed $\theta>0$, as $X\to\infty$.
+\end{conjecture}
+
+\begin{theorem}[Conditional resolution of Conjecture~\ref{conj:B}]\label{thm:B}
+Assume Conjecture~\ref{conj:UBH} for $5$-tuples of linear forms. Then for every fixed $0<\theta<1$, every sufficiently large $t\in\T$ has at least
+\[
+\bigl(\Sing_{\min}+o(1)\bigr)\,\frac{t^{\theta}}{\theta\,(\log t)^5}
+\]
+productive gaps of size at most $t^{\theta}$.
+In particular Conjecture~\ref{conj:B} holds, even with the stronger bound $d(t) = O_\theta(t^{\theta})$.
+\end{theorem}
+
+\begin{proof}
+Apply Conjecture~\ref{conj:UBH} to $g_1,\dots,g_5$ in the variable $d\le Y := t^{\theta}$; the coefficients are $O(t)$.
+Lemma~\ref{lem:Badm} gives admissibility for $t>5$ and Lemma~\ref{lem:Smin} gives $\Sing(t)\ge\Sing_{\min}$.
+For $2\le u\le Y$ one has $\log g_i(u)\le\log(3t)$ for $i\le 4$ and $\log g_5(u)\le\log Y = \theta\log t$, so the integral is at least $(1+o(1))\,Y/(\theta(\log t)^5)$.
+Every $d$ counted has $g_1(d),g_2(d)$ prime and $>3$, hence $d\equiv 0\pmod 6$, $d+t\in\T$, $2t+d+1\in\T$ and $d-1$ prime: $d$ is productive, of size $\le t^{\theta} = o(t)$.
+\end{proof}
+
+\begin{conjecture}[Least productive gap]\label{conj:dmin}
+For $t\in\T$, $t\ge 5$, let $\dmin(t)$ be the least productive gap.
+Then $\dmin(t)$ exists for every $t\ge 5$, and for every $\varepsilon>0$,
+\[
+\dmin(t)\ll_\varepsilon(\log t)^{5+\varepsilon}.
+\]
+\end{conjecture}
+
+The exponent is what the Bateman--Horn density suggests: by Lemma~\ref{lem:Smin} the productive $d\le Y$ have density $\asymp 1/((\log t)^4\log Y)$, so the first hit is typically of size $(\log t)^4\log\log t$, and the maximal first hit over the $\asymp X/(\log X)^2$ lower twins $t\le X$ is, on a Cram\'er-type model, of size $(\log X)^5\log\log X$.
+In the data every lower twin $5\le t\le 10^6$ has a productive gap; the largest least gap is $\dmin(719351) = 63318$, and $\max_{11\le t\le 10^6}\dmin(t)/(\log t)^5 = 0.2075$, attained at $t = 7331$.
+
+Along the orbit $t_{k+1} = G(t_k)$ one has $t_{k+1}\sim 2t_k$, so $t_k\asymp 2^kt_0$.
+This is the generative map of the earlier notes; under Theorem~\ref{thm:B} it is defined at every step, and with least productive gaps it runs from $5$ as
+\[
+5\to 17\to 59\to 197\to 617\to 1277\to 2729\to 5519\to 11171\to 25799\to 52859\to\cdots
+\]
+
+\section{Status of the claims}\label{sec:status}
+
+The following table records the status of every statement used to resolve the two conjectures.
+The numbering of the rows matches the eight certificates of the companion script.
+
+\begin{center}
+\begin{tabular}{@{}rp{5.6cm}p{8.2cm}@{}}
+\toprule
+& Claim & Status\\
+\midrule
+1 & $D_n\in\T$ for $n\ge 2$ & False (Lemma~\ref{lem:Dn}). Conjecture~\ref{conj:A} reduces to $C_n\in\T$.\\
+2 & Conjecture~\ref{conj:A}, unconditionally & Open. Implies the twin-prime conjecture (Proposition~\ref{prop:tpc}).\\
+3 & Conjecture~\ref{conj:A} under Hypothesis~H & True (Theorem~\ref{thm:A}), via the admissible $6$-tuple~\eqref{eq:six}; every gap $g\equiv 0\pmod 6$ occurs infinitely often (Theorem~\ref{thm:everygap}); witnesses $n>5$ lie in $11\pmod{30}$ (Lemma~\ref{lem:mod30}).\\
+4 & Gap-$6$ propagation iterates & False, unconditionally (Proposition~\ref{prop:noiterate}); the following gap is $\equiv 0,12,18\pmod{30}$.\\
+5 & Conjecture~\ref{conj:B}, unconditionally & Open. Not comparable with Conjecture~\ref{conj:A} by any known implication (Proposition~\ref{prop:relations}); $t=3$ has no productive gap; every $5\le t\le 10^6$ has one.\\
+6 & Conjecture~\ref{conj:B} under uniform Bateman--Horn & True (Theorem~\ref{thm:B}), with $\gg t^{\theta}/(\log t)^5$ gaps below $t^{\theta}$; the $5$-tuple is admissible for every $t>5$ and $\Sing(t)\ge 10.1318$.\\
+7 & Conjecture~\ref{conj:A} or~\ref{conj:B} $\Rightarrow$ infinitely many twins & True (Proposition~\ref{prop:tpc}).\\
+8 & Computational support ($p_n\le 10^7$ by default; $p_n\le 10^{13}$ in the original notes) & Consistent with both conjectures, with the Bateman--Horn constant $\Sing = 51.8959$ for the gap-$6$ tuple, and with $\kappa = 14.7677$ for the number of propagating pairs (ratio $1.02$ to the data).\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+An unconditional proof of either conjecture would be a proof of the twin-prime conjecture by a new route, and would require an idea that bypasses the parity barrier for a six-dimensional prime constellation.
+That idea is not supplied here.
+The theorems above are the resolution that the statements actually admit: Conjecture~\ref{conj:A} is Hypothesis~H for one explicit admissible tuple (indeed for a family of tuples, one for each gap); Conjecture~\ref{conj:B} is a uniform short-interval form of the same law with a singular series bounded below by an absolute constant.
+
+\section{The Python certificate}\label{sec:code}
+
+The companion script \texttt{prove\_section6.py} machine-checks every row of the table in Section~\ref{sec:status}.
+The modular lemmas are finite residue-class enumerations and are therefore complete proofs.
+Admissibility of a $k$-tuple of primitive linear forms is decided by inspecting the primes $q\le k$ exhaustively and invoking the pigeonhole principle for $q>k$; the root counts $\nu(q)$ are computed exactly below the largest $2\times 2$ minor of the coefficient matrix and are equal to $k$ above it.
+The construction of Theorem~\ref{thm:everygap} is executed for $12\le g\le 60$: the script builds $M$, $r$ and the forms $F_i$, verifies admissibility, verifies that $q_j\mid r+6j$, and exhibits witnesses in the class for $g=12$.
+Proposition~\ref{prop:noiterate} is checked both by the covering of $\F_5$ by the $10$-tuple and against the data.
+The singular series $\Sing$, $\Sing_{\min}$ and the constants $2C_2$, $\kappa_{\mathrm{loc}}$, $\kappa$ are evaluated from their Euler products over the primes up to $10^6$ (relative tail below $2\cdot 10^{-6}$), and the Bateman--Horn integrals by Simpson's rule in the variable $\log t$; nothing is fitted.
+The ``open'' claims are certified by exhibiting the reduction to the twin-prime conjecture together with the observation that no finite computation decides an infinitary statement of this type.
+The default run uses $p_n\le 10^7$ (sieve to $2\cdot 10^7 + 4\cdot 10^5$) and finishes in a few seconds; \texttt{--limit} raises the range.
+
+\begin{thebibliography}{9}
+\bibitem{BH} P.~T. Bateman and R.~A. Horn. A heuristic asymptotic formula concerning the distribution of prime numbers. \emph{Math.\ Comp.}, 16:363--367, 1962.
+\bibitem{B1} D.~Bierton. A twin-prime propagation conjecture. Zenodo preprint, 19 August 2026. \url{https://doi.org/10.5281/zenodo.22017371}.
+\bibitem{B2} D.~Bierton. A twin-gap existence conjecture. Zenodo preprint, 22 August 2026. \url{https://doi.org/10.5281/zenodo.22058355}.
+\bibitem{HL} G.~H. Hardy and J.~E. Littlewood. Some problems of `Partitio Numerorum'. III: On the expression of a number as a sum of primes. \emph{Acta Math.}, 44:1--70, 1923.
+\bibitem{LOS} R.~J. Lemke Oliver and K.~Soundararajan. Unexpected biases in the distribution of consecutive primes. \emph{Proc.\ Natl.\ Acad.\ Sci.\ USA}, 113(31):E4446--E4454, 2016.
+\bibitem{Maynard} J.~Maynard. Small gaps between primes. \emph{Ann.\ of Math.}, 181:383--413, 2015.
+\bibitem{Polymath} D.~H.~J. Polymath. Variants of the Selberg sieve, and bounded intervals containing many primes. \emph{Res.\ Math.\ Sci.}, 1:12, 2014.
+\bibitem{Schinzel} A.~Schinzel and W.~Sierpi\'nski. Sur certaines hypoth\`eses concernant les nombres premiers. \emph{Acta Arith.}, 4:185--208, 1958. Erratum: ibid.\ 5 (1959), 259.
+\bibitem{Zhang} Y.~Zhang. Bounded gaps between primes. \emph{Ann.\ of Math.}, 179:1121--1174, 2014.
+\end{thebibliography}
+
+\end{document}
