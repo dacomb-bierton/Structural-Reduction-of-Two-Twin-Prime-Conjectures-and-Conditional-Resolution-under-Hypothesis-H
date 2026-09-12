@@ -471,7 +471,7 @@ def prove_claim_3_A_under_H(eng: PrimeEngine, twins: List[int], limit: int) -> C
     for g in (0, 6, 12, 18, 24):
         table_g[g] = survivors(gap_tuple(g if g else 30), 5)
     cert.add(
-        "Theorem 4.6, local step: the gap-g tuple is admissible for every g == 0 (mod 6)",
+        "Lemma 4.7 (local step of Theorem 4.6): the gap-g tuple is admissible for every g == 0 (mod 6)",
         all(table_g.values()),
         "mod 2: n odd; mod 3: n == 2 (g == 0 mod 3 keeps all six forms nonzero);\n"
         + "\n".join(f"mod 5, g == {g:2d} (mod 30): surviving n mod 5 = {s}" for g, s in table_g.items())
@@ -538,12 +538,12 @@ def prove_claim_3_A_under_H(eng: PrimeEngine, twins: List[int], limit: int) -> C
 
 
 # ---------------------------------------------------------------------------
-# Claim 4.  Gap-6 propagation never iterates  (Proposition 4.7).
+# Claim 4.  Gap-6 propagation never iterates  (Proposition 4.9).
 # ---------------------------------------------------------------------------
 
 def prove_claim_4_gap6_never_iterates(eng: PrimeEngine, twins: List[int], limit: int) -> Certificate:
     cert = Certificate(
-        "Claim 4.  Gap-6 propagation never iterates  is TRUE  (Proposition 4.7).",
+        "Claim 4.  Gap-6 propagation never iterates  is TRUE  (Proposition 4.9).",
         "PROVED UNCONDITIONALLY: if (n, n+6) propagates then (C, C+6) does not, C = 2n+7.",
     )
     cert.add(
@@ -854,7 +854,7 @@ def prove_claim_8_computational_support(eng: PrimeEngine, twins: List[int], limi
             dyadic.append((lo, len(blk), s, s / len(blk) * math.log(2 * x) ** 2))
         lo *= 2
     cert.add(
-        "Success rate of consecutive pairs matches kappa_local / (log 2x)^2 (Heuristic 4.9)",
+        "Success rate of consecutive pairs matches kappa_local / (log 2x)^2 (Heuristic 4.11)",
         0.7 <= ratio_k <= 1.3,
         f"2C_2 = {two_C2:.6f};  prod_{{q>=5}} (1 + 8/(q-2)^3) = {prod:.6f};\n"
         f"kappa_local = 6 (2C_2) prod = {kappa_local:.4f};  kappa = kappa_local * 2C_2 = {kappa:.4f}.\n"
@@ -940,7 +940,7 @@ def run(limit: int, quiet: bool) -> int:
     print("=" * 78)
     if failed == 0:
         print("ALL EIGHT SECTION-6 CLAIMS CERTIFIED.")
-        print("Lemmas 2.1-2.3, 4.2, 4.3, 4.5, 5.1-5.3 and Proposition 4.7 are complete (finite residue proofs).")
+        print("Lemmas 2.1-2.3, 4.2, 4.3, 4.5, 5.1-5.3 and Proposition 4.9 are complete (finite residue proofs).")
         print("Theorems 4.4, 4.6 and 5.5 are complete as implications from H / uniform Bateman-Horn.")
         print("Unconditional 1.1 and 1.2 remain open because they imply the twin-prime conjecture.")
         return 0
